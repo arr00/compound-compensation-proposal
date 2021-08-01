@@ -1,19 +1,10 @@
 {
-  "name": "@uniswap/merkle-distributor",
+  "name": "@arr00/compound-compensation-proposal",
   "author": {
-    "name": "Moody Salem"
+    "name": "Arr00"
   },
-  "description": "📦 A smart contract that distributes a balance of tokens according to a merkle root",
-  "version": "1.0.1",
-  "homepage": "https://uniswap.org",
-  "keywords": [
-    "uniswap",
-    "erc20"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Uniswap/merkle-distributor"
-  },
+  "description": "Contracts and tests for the proposal",
+  "version": "1.0.0",
   "files": [
     "build"
   ],

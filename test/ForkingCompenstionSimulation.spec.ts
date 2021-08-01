@@ -42,29 +42,46 @@ describe('ForkingCompensationSimulation', () => {
   let governorBravoCompHolder2 = new Contract('0xc0Da02939E1441F497fd74F78cE7Decb17B66529', governorBravoAbi.abi, compHolder2);
   let merkleDistributor:Contract;
 
-  beforeEach('deploy merkleDistributor', async () => {
-    merkleDistributor = await deployContract(
+    describe('#sanity test Distributor', () => {
+    let token: Contract
+    beforeEach('deploy token', async () => {
+      token = await deployContract(wallet0, TestERC20, ['Token', 'TKN', 0], overrides)
+    })
+
+    it('claim still works', async () => {
+      merkleDistributor = await deployContract(
+        wallet0,
+        Distributor,
+        [token.address, MerkleRoot.merkleRoot, wallet0.address, BigInt("0x0848f2bd62320b332b")],
+        overrides
+      )
+
+      await token.setBalance(wallet0.address, BigInt("0x0848f2bd62320b332b"))
+      expect(await token.balanceOf(wallet0.address)).to.eq(BigInt("0x0848f2bd62320b332b"))
+      await token.approve(merkleDistributor.address, BigInt("0x0848f2bd62320b332b"))
+      await expect(merkleDistributor.fund(overrides)).to.emit(merkleDistributor,"Funded");
+
+      await merkleDistributor.claim(0, "0x0060f3570331bF192682AfC1aABEE27aF2Ce8e3d", BigInt("0x0848f2bd62320b332b"), [
+        "0xa0379667854def5baf0df2b3bb2d0a1aaf6bcfc93a9a7621d63c5b1c097098af",
+        "0xcc90c0b91f6b71af52a99501702316538b5c7c9b49818318602727a8a9049a6b",
+        "0xf525e098fbde0a942042bcc3308b3d95a11a6e350bf71bdb9ee4d5cbe6651c9b",
+        "0x22a42e01dcb86b8c16cbfe0eb9f92e7941b99a9057c2179f99940d62fe4ca314",
+        "0xb23906aad335aa9cb4bf3158f7c5c5b0e58066c717c521db418e78b969247b91",
+        "0xfddc7a1aa663c4ff4c9bf2228eec04cba6fb1aa92f8d5bcf61e379d326e6a3b4",
+        "0xb3c9115c2b9d561809e39c484f461dc5367925452f0f800facc289b747c2eaff"
+      ], overrides)
+      expect(await token.balanceOf("0x0060f3570331bF192682AfC1aABEE27aF2Ce8e3d")).to.eq(BigInt("0x0848f2bd62320b332b"))
+    })
+  })
+
+  describe('#test proposal', () => {
+    beforeEach('propose and execute proposal', async () => {
+      merkleDistributor = await deployContract(
         wallet0,
         Distributor,
         [token.address, MerkleRoot.merkleRoot, timelock, MerkleRoot.tokenTotal],
         overrides
       )
-  });
-
-  describe('#token', () => {
-    it('returns the token address', async () => {
-      const distributor = await deployContract(
-        wallet0,
-        Distributor,
-        [token.address, ZERO_BYTES32, NULL_ADDRESS, ZERO_BYTES32],
-        overrides
-      )
-      expect(await distributor.token()).to.eq(token.address)
-    })
-  });
-
-  describe('#test proposal', () => {
-    it('propose', async () => {
       const merkleAddressTrimmed = merkleDistributor.address.substring(2);
       await expect(governorBravo.propose(['0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643','0x6B175474E89094C44Da98b954EedeAC495271d0F', merkleDistributor.address],[0, 0, 0],['_reduceReserves(uint256)', 'approve(address,uint256)', 'fund()'],['0x00000000000000000000000000000000000000000005a3b9916b8fd26693deba','0x000000000000000000000000' +  merkleAddressTrimmed + '00000000000000000000000000000000000000000005a3b9916b8fd26693deba', '0x00'],'Compensation Proposal')).to.emit(governorBravo, 'ProposalCreated');
       await advanceBlocks(13140);
@@ -75,6 +92,25 @@ describe('ForkingCompensationSimulation', () => {
       await advanceTime(259200);
       await governorBravo.execute(54);
       expect(await token.balanceOf(merkleDistributor.address)).to.eq(BigInt("6817797961061626144874170"))
+      console.log('Finished with proposal');
+
+    })
+    it('recognize token', async () => {
+      expect(await merkleDistributor.token()).to.eq(token.address)
+      expect(await merkleDistributor.isFunded()).to.eq(true)
+      const merkleDist2 = new Contract(merkleDistributor.address, Distributor.abi, compHolder)
+
+      await merkleDist2.claim(0, "0x0060f3570331bF192682AfC1aABEE27aF2Ce8e3d", BigInt("0x0848f2bd62320b332b"), [
+        "0xa0379667854def5baf0df2b3bb2d0a1aaf6bcfc93a9a7621d63c5b1c097098af",
+        "0xcc90c0b91f6b71af52a99501702316538b5c7c9b49818318602727a8a9049a6b",
+        "0xf525e098fbde0a942042bcc3308b3d95a11a6e350bf71bdb9ee4d5cbe6651c9b",
+        "0x22a42e01dcb86b8c16cbfe0eb9f92e7941b99a9057c2179f99940d62fe4ca314",
+        "0xb23906aad335aa9cb4bf3158f7c5c5b0e58066c717c521db418e78b969247b91",
+        "0xfddc7a1aa663c4ff4c9bf2228eec04cba6fb1aa92f8d5bcf61e379d326e6a3b4",
+        "0xb3c9115c2b9d561809e39c484f461dc5367925452f0f800facc289b747c2eaff"
+      ], overrides)
+
+      expect(await token.balanceOf("0x0060f3570331bF192682AfC1aABEE27aF2Ce8e3d")).to.eq(BigInt("0x0848f2bd62320b332b"))
     })
   })
 
@@ -87,3 +123,5 @@ describe('ForkingCompensationSimulation', () => {
     await provider.send("evm_mineBlockNumber",[blocks + currentBlock])
   }
 })
+
+
