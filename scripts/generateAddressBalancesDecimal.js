@@ -59,7 +59,7 @@ async function getDaiCompensationBalances() {
   content.total = String(Number(totalDaiToCompensate) / 1e18);
 
   let contentToWrite = prettier.format(JSON.stringify(content), {
-    parser: "json5",
+    parser: "json",
   });
   fs.writeFileSync(
     "merkle-root/addressBalancesDecimal.json",

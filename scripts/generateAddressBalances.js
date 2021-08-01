@@ -57,8 +57,7 @@ async function getDaiCompensationBalances() {
   }
 
   let contentToWrite = prettier.format(JSON.stringify(daiToCompensate), {
-    parser: "json5",
-    trailingComma: "none",
+    parser: "json",
   });
   fs.writeFileSync(
     "merkle-root/addressBalances.json",

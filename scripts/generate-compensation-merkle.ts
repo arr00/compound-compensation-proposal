@@ -8,7 +8,7 @@ const json = JSON.parse(fs.readFileSync('merkle-root/addressBalances.json', { en
 if (typeof json !== 'object') throw new Error('Invalid JSON')
 
 let contentToWrite = prettier.format(JSON.stringify(parseBalanceMap(json)), {
-    parser: "json5",
+    parser: "json",
   });
 fs.writeFileSync('merkle-root/daiCompensationMerkleTree.json', contentToWrite);
 
