@@ -3,7 +3,7 @@
 const Web3 = require("web3");
 const fs = require("fs");
 const merkleTree = JSON.parse(
-  fs.readFileSync("merkle-root/compCompensationMerkleTree.json")
+  fs.readFileSync("merkle-root/daiCompensationMerkleTree.json")
 );
 const claims = merkleTree["claims"];
 const distributorAbi = JSON.parse(
@@ -18,7 +18,7 @@ if (wssUrl == undefined) {
 }
 
 const web3 = new Web3(wssUrl);
-const distributorAddress = "0xF8649AC6D88633b381A9537242CAfeF6DC4482d2";
+const distributorAddress = "<SET_ADDRESS>";
 
 async function relayAll(privateKey) {
   web3.eth.accounts.wallet.add(privateKey);

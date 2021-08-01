@@ -36,7 +36,7 @@
     "compile": "waffle",
     "pretest": "yarn compile",
     "test": "mocha",
-    "generate-merkle-root": "ts-node scripts/generate-compensation-merkle.ts",
+    "gen-merkle-root": "ts-node scripts/generate-compensation-merkle.ts",
     "gen-compensation-balances": "node scripts/generateAddressBalances.js",
     "gen-compensation-balances-decimal": "node scripts/generateAddressBalancesDecimal.js"
   }
